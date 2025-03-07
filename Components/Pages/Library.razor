@@ -53,7 +53,7 @@ else
                     @if (!CreateGameOpened)
                     {
                         <th>
-                            <button style="width:86px;background:green" class="btn" @onclick="CreateGame">
+                            <button style="width:89px;background:darkgreen" class="btn" @onclick="CreateGame">
                                 +
                             </button>
                         </th>
@@ -61,7 +61,7 @@ else
                     else
                     {
                         <th>
-                            <button style="width:86px;background:red" class="btn" @onclick="(e => CreateGameOpened = false)">
+                            <button style="width:89px; background:#cc0000;" class="btn" @onclick="(e => CreateGameOpened = false)">
                                 &#x2715
                             </button>
                         </th>
@@ -72,7 +72,7 @@ else
         <tbody>
             @if (IsAdmin && CreateGameOpened)
             {
-                <tr style="background:#3c4143">
+                <tr style="background:#3c4143; border-bottom-color:darkgreen !important">
                     <td><input style="width:90px" @bind="@BlankGame.Name" class="input-group-sm" /></td>
                     <td><input style="width:180px" @bind="@BlankGame.Genre" class="input-group-sm" /></td>
                     <td><input style="width:150px" @bind="@BlankGame.Platform" class="input-group-sm" /></td>
@@ -81,21 +81,19 @@ else
                     <td><input style="width:130px" type="number" @bind="@BlankGame.ReleaseYear" class="input-group-sm" /></td>
 
                     <td>
-                        <select style="width:110px" @bind="@BlankGame.MediaType">
-                            <option value="0">CD-ROM</option>
-                            <option value="1">DVD</option>
-                            <option value="2">BluRay</option>
-                            <option value="3">Diskette</option>
-                            <option value="4">Tape</option>
+                        <select style="width:110px; padding-left:0px" @bind="@BlankGame.MediaType">
+                            @foreach (var media in Enum.GetValues(typeof(Media)))
+                            {
+                                <option value="@media">@Enums.Stringify((Media)media, '-')</option>
+                            }
                         </select>
                     </td>
                     <td>
-                        <select style="width:110px" class="form-check" @bind="@BlankGame.Packaging">
-                            <option value="0">Box Big</option>
-                            <option value="1">Box Small</option>
-                            <option value="2">Jewel Case</option>
-                            <option value="3">Sleeve</option>
-                            <option value="4">None</option>
+                        <select style="width:110px; padding-left:0px" class="form-check" @bind="@BlankGame.Packaging">
+                            @foreach (var packaging in Enum.GetValues(typeof(Packaging)))
+                            {
+                                <option value="@packaging">@Enums.Stringify((Packaging)packaging)</option>
+                            }
                         </select>
                     </td>
 
@@ -104,7 +102,7 @@ else
                     <td><input style="width:125px" bind="@BlankGame.Borrower" /></td>
 
                     <td>
-                        <button style="width:86px;background:green" class="btn" @onclick="CreateGame">
+                        <button style="width:89px;background:darkgreen" class="btn" @onclick="CreateGame">
                             +
                         </button>
                     </td>
@@ -142,19 +140,19 @@ else
                             <td>
                                 @if (!GamesQueuedForDeletion.Contains(game.Id))
                                 {
-                                    <button style="background:purple" class="btn" @onclick="@(e => ShowEditor(game.Id))">
+                                    <button style="background:#660066" class="btn" @onclick="@(e => ShowEditor(game.Id))">
                                         &#x270E
                                     </button>
-                                    <button style="background:red;color:white;" class="btn" @onclick="@(e => DisposeGame(game.Id))">
+                                    <button style="background:#cc0000; color:black !important; padding-left:15px; padding-right:14px" class="btn" @onclick="@(e => DisposeGame(game.Id))">
                                         &#x1F5D1
                                     </button>
                                 }
                                 else
                                 {
-                                    <button style="background:red; color:white;" class="btn" @onclick="@(e => DisposeGame(game.Id))">
+                                    <button style="background:#cc0000; color:black !important; padding-left:15px; padding-right:14px" class="btn" @onclick="@(e => DisposeGame(game.Id))">
                                         &#x1F5D1
                                     </button>
-                                    <button style="background:orange;" class="btn" @onclick="@(e => GamesQueuedForDeletion.Remove(game.Id))">
+                                    <button style="background:#cc8400; color:black !important; padding-left:14px; padding-right:13px" class="btn" @onclick="@(e => GamesQueuedForDeletion.Remove(game.Id))">
                                         &#x2715
                                     </button>
                                 }
@@ -173,21 +171,19 @@ else
                         <td><input style="width:130px" type="number" @bind="@game.ReleaseYear" class="input-group-sm" /></td>
 
                         <td>
-                            <select style="width:110px" class="form-check" @bind="@game.MediaType">
-                                <option value="0">CD-ROM</option>
-                                <option value="1">DVD</option>
-                                <option value="2">BluRay</option>
-                                <option value="3">Diskette</option>
-                                <option value="4">Tape</option>
+                            <select style="width:110px; padding:0px" class="form-check" @bind="@game.MediaType">
+                                @foreach (var media in Enum.GetValues(typeof(Media)))
+                                {
+                                    <option value="@media">@Enums.Stringify((Media)media, '-')</option>
+                                }
                             </select>
                         </td>
                         <td>
-                            <select style="width:110px" class="form-check" @bind="@game.Packaging">
-                                <option value="0">Box Big</option>
-                                <option value="1">Box Small</option>
-                                <option value="2">Jewel Case</option>
-                                <option value="3">Sleeve</option>
-                                <option value="4">None</option>
+                            <select style="width:110px; padding-left:0px" class="form-check" @bind="@game.Packaging">
+                                @foreach (var packaging in Enum.GetValues(typeof(Packaging)))
+                                {
+                                    <option value="@packaging">@Enums.Stringify((Packaging)packaging)</option>
+                                }
                             </select>
                         </td>
 
@@ -195,7 +191,7 @@ else
                         <td><input style="width:55px" @bind="@game.Shelf" class="input-group-sm" /></td>
                         <td><input style="width:125px" @bind="@game.Borrower" /></td>
 
-                        <td><button style="width:86px;background:green" class="btn" @onclick="(e => ModifyGame(game.Id))">&#x2713</button></td>
+                        <td><button style="width:89px;background:darkgreen" class="btn" @onclick="(e => ModifyGame(game.Id))">&#x2713</button></td>
                     </tr>
                 }
             }
@@ -208,7 +204,7 @@ else
         if (pageItterate > 0)
             pageItterate -= 1;
 
-        @for (short i = pageItterate; i < (dataTable.Length + pageSize - 1) / pageSize && i < pageItterate + 3; i++)
+        for (short i = pageItterate; i < (dataTable.Length + pageSize - 1) / pageSize && i < pageItterate + 3; i++)
         {
             short pageNr = i;
             if (pageIndex == i)
@@ -223,9 +219,27 @@ else
                     @(i + 1)
                 </button>
             }
+        }
 
-            @* @if () *@
-            @*     break; *@
+        if ((dataTable.Length + pageSize - 1) / pageSize > pageItterate + 3)
+        {
+            int finalButton = ((dataTable.Length + pageSize - 1) / pageSize) - 1;
+
+            if (!ShowPageSelector)
+            {
+                <button class="btn" @onclick="@(e => ShowPageSelector = true)">
+                    ...
+                </button>
+            }
+            else
+            {
+                <input type="number" @onchange="PaginationSelectionSet">
+            }
+
+
+            <button class="btn" @onclick="@(e => PaginationButtonPressed((short)finalButton))">
+                @(finalButton + 1)
+            </button>
         }
     }
 
@@ -265,11 +279,17 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Delay(0);
+        await Task.Delay(1);
         dataTable = Program.context?.Games.OrderBy(x => x.Name).ToArray();
     }
 
     private void PaginationButtonPressed(short index) => pageIndex = index;
+    private bool ShowPageSelector = false;
+    private void PaginationSelectionSet(ChangeEventArgs e) 
+    {
+        pageIndex = (short)(Int32.Parse(e.Value!.ToString()!) - 1);
+        ShowPageSelector = false;
+    }
 
     private void SortTableBy(string selector)
     {
@@ -293,6 +313,7 @@ else
         else
             EntryBeingEditted.Add(id);
     }
+
     private async Task ModifyGame(int id)
     {
         if (Program.context == null || dataTable == null)
