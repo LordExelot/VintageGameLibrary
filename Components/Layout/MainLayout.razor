@@ -1,4 +1,8 @@
 ﻿@inherits LayoutComponentBase
+@using VintageGameLibrary.Models;
+@using VintageGameLibrary.Services;
+@inject UserService UserService;
+@using System.Diagnostics;
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +11,17 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+
+            @* Why wont this work! *@
+            <select class="form-check" @onchange="UpdateCurrentUser" style="display:none">
+                @if (Program.context != null)
+                {
+                    @foreach (var user in Program.context!.Users)
+                    {
+                        <option value="@user.Id.ToString()">@user.Username</option>
+                    }
+                }
+            </select>
         </div>
 
         <article class="content px-4">
@@ -21,3 +35,35 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code
+{
+    private bool IsAdmin = false;
+    private int _currentUser;
+
+    protected override void OnInitialized()
+    {
+        _currentUser = UserService.CurrentUser.Id;
+    }
+
+    private void UpdateCurrentUser(ChangeEventArgs e)
+    {
+        Debug.WriteLine("TEST");
+        if (e.Value == null || !int.TryParse(e.Value.ToString(), out int userId))
+        {
+            return;
+        }
+
+        Debug.WriteLine($"Selected User ID: {userId}");
+        Debug.WriteLine($"Current User ID: {UserService.CurrentUser.Id}");
+
+        var user = Program.context?.Users.Find(userId);
+        if (user == null)
+        {
+            return;
+        }
+
+        UserService.CurrentUser = user;
+        StateHasChanged();
+    }
+}

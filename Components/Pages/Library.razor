@@ -1,0 +1,511 @@
+﻿@page "/library"
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@using VintageGameLibrary;
+@using VintageGameLibrary.Data;
+@using VintageGameLibrary.Models;
+@using VintageGameLibrary.Models.Enums;
+@using VintageGameLibrary.Utility;
+@using VintageGameLibrary.Services;
+@inject UserService UserService;
+@using System.Linq.Dynamic.Core;
+@using System.Reflection;
+
+<PageTitle>Shelves</PageTitle>
+
+<h3>Shelves</h3>
+
+@if (dataTable == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <h6>
+        Admin Mode: 
+        <input type="checkbox" @bind="IsAdmin" />
+    </h6>
+
+    <input style="margin-top:25px" @bind="@SearchQuerry"/>
+    <button class="btn">
+        &#x1F50E;&#xFE0E;
+    </button>
+
+    <table class="table" style="max-width:1500px !important">
+        <thead>
+            <tr>
+                <th @onclick="@(e => SortTableBy("Name"))">Name @NameSort</th>
+                <th @onclick="@(e => SortTableBy("Genre"))">Genre @GenreSort</th>
+                <th @onclick="@(e => SortTableBy("Platform"))">Platform @PlatformSort</th>
+                <th @onclick="@(e => SortTableBy("Publisher"))">Publisher @PublisherSort</th>
+                <th @onclick="@(e => SortTableBy("Developer"))">Developer @DeveloperSort</th>
+                <th @onclick="@(e => SortTableBy("ReleaseYear"))">Release Year @YearSort</th>
+                <th @onclick="@(e => SortTableBy("MediaType"))">Media Type @MediaSort</th>
+
+                @if (IsAdmin)
+                {
+                    <th @onclick="@(e => SortTableBy("Packaging"))">Packaging @PackagingSort</th>
+                    <th @onclick="@(e => SortTableBy("Barcode"))">Barcode @BarcodeSort</th>
+                    <th @onclick="@(e => SortTableBy("Shelf"))">Shelf @ShelfSort</th>
+                    <th @onclick="@(e => SortTableBy("Borrower"))">Borrowed To @BorrowerSort</th>
+
+                    @if (!CreateGameOpened)
+                    {
+                        <th>
+                            <button style="width:86px;background:green" class="btn" @onclick="CreateGame">
+                                +
+                            </button>
+                        </th>
+                    }
+                    else
+                    {
+                        <th>
+                            <button style="width:86px;background:red" class="btn" @onclick="(e => CreateGameOpened = false)">
+                                &#x2715
+                            </button>
+                        </th>
+                    }
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (IsAdmin && CreateGameOpened)
+            {
+                <tr style="background:#3c4143">
+                    <td><input style="width:90px" @bind="@BlankGame.Name" class="input-group-sm" /></td>
+                    <td><input style="width:180px" @bind="@BlankGame.Genre" class="input-group-sm" /></td>
+                    <td><input style="width:150px" @bind="@BlankGame.Platform" class="input-group-sm" /></td>
+                    <td><input style="width:100px" @bind="@BlankGame.Publisher" class="input-group-sm" /></td>
+                    <td><input style="width:125px" @bind="@BlankGame.Developer" class="input-group-sm" /></td>
+                    <td><input style="width:130px" type="number" @bind="@BlankGame.ReleaseYear" class="input-group-sm" /></td>
+
+                    <td>
+                        <select style="width:110px" @bind="@BlankGame.MediaType">
+                            <option value="0">CD-ROM</option>
+                            <option value="1">DVD</option>
+                            <option value="2">BluRay</option>
+                            <option value="3">Diskette</option>
+                            <option value="4">Tape</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select style="width:110px" class="form-check" @bind="@BlankGame.Packaging">
+                            <option value="0">Box Big</option>
+                            <option value="1">Box Small</option>
+                            <option value="2">Jewel Case</option>
+                            <option value="3">Sleeve</option>
+                            <option value="4">None</option>
+                        </select>
+                    </td>
+
+                    <td><input style="width:115px" @bind="@BlankGame.Barcode" class="input-group-sm" /></td>
+                    <td><input style="width:55px" @bind="@BlankGame.Shelf" class="input-group-sm" /></td>
+                    <td><input style="width:125px" bind="@BlankGame.Borrower" /></td>
+
+                    <td>
+                        <button style="width:86px;background:green" class="btn" @onclick="CreateGame">
+                            +
+                        </button>
+                    </td>
+                </tr>
+            }
+
+            @for (int i = pageIndex * pageSize; i < (pageIndex * pageSize) + pageSize && i < dataTable.Length; i++)
+            {
+                var game = dataTable[i];
+                @if (!IsAdmin || !EntryBeingEditted.Contains(game.Id))
+                {
+                    <tr>
+                        <td style="width:90px">@game.Name</td>
+                        <td style="width:180px">@game.Genre</td>
+                        <td style="width:150px">@game.Platform</td>
+                        <td style="width:100px">@game.Publisher</td>
+                        <td style="width:125px">@game.Developer</td>
+                        <td style="width:130px">@game.ReleaseYear</td>
+                        <td style="width:110px">@Enums.Stringify(game.MediaType, '-')</td>
+
+                        @if (IsAdmin)
+                        {
+                            <td style="width:110px">@Enums.Stringify(game.Packaging)</td>
+                            <td style="width:115px">@game.Barcode</td>
+                            <td style="width:55px">@game.Shelf</td>
+
+                            @if (game.Borrower == null)
+                            {
+                                <td>-</td>
+                            }
+                            else
+                            {
+                                <td>@game.Borrower</td>
+                            }
+                            <td>
+                                @if (!GamesQueuedForDeletion.Contains(game.Id))
+                                {
+                                    <button style="background:purple" class="btn" @onclick="@(e => ShowEditor(game.Id))">
+                                        &#x270E
+                                    </button>
+                                    <button style="background:red;color:white;" class="btn" @onclick="@(e => DisposeGame(game.Id))">
+                                        &#x1F5D1
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button style="background:red; color:white;" class="btn" @onclick="@(e => DisposeGame(game.Id))">
+                                        &#x1F5D1
+                                    </button>
+                                    <button style="background:orange;" class="btn" @onclick="@(e => GamesQueuedForDeletion.Remove(game.Id))">
+                                        &#x2715
+                                    </button>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td><input style="width:90px" @bind="@game.Name" class="input-group-sm" /></td>
+                        <td><input style="width:180px" @bind="@game.Genre" class="input-group-sm" /></td>
+                        <td><input style="width:150px" @bind="@game.Platform" class="input-group-sm" /></td>
+                        <td><input style="width:100px" @bind="@game.Publisher" class="input-group-sm" /></td>
+                        <td><input style="width:125px" @bind="@game.Developer" class="input-group-sm" /></td>
+                        <td><input style="width:130px" type="number" @bind="@game.ReleaseYear" class="input-group-sm" /></td>
+
+                        <td>
+                            <select style="width:110px" class="form-check" @bind="@game.MediaType">
+                                <option value="0">CD-ROM</option>
+                                <option value="1">DVD</option>
+                                <option value="2">BluRay</option>
+                                <option value="3">Diskette</option>
+                                <option value="4">Tape</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select style="width:110px" class="form-check" @bind="@game.Packaging">
+                                <option value="0">Box Big</option>
+                                <option value="1">Box Small</option>
+                                <option value="2">Jewel Case</option>
+                                <option value="3">Sleeve</option>
+                                <option value="4">None</option>
+                            </select>
+                        </td>
+
+                        <td><input style="width:115px" @bind="@game.Barcode" class="input-group-sm" /></td>
+                        <td><input style="width:55px" @bind="@game.Shelf" class="input-group-sm" /></td>
+                        <td><input style="width:125px" @bind="@game.Borrower" /></td>
+
+                        <td><button style="width:86px;background:green" class="btn" @onclick="(e => ModifyGame(game.Id))">&#x2713</button></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    @if (dataTable.Length > pageSize)
+    {
+        short pageItterate = pageIndex;
+        if (pageItterate > 0)
+            pageItterate -= 1;
+
+        @for (short i = pageItterate; i < (dataTable.Length + pageSize - 1) / pageSize && i < pageItterate + 3; i++)
+        {
+            short pageNr = i;
+            if (pageIndex == i)
+            {
+                <button class="btn" style="background:#343a40">
+                    @(i + 1)
+                </button>
+            }
+            else
+            {
+                <button class="btn" @onclick="@(e => PaginationButtonPressed(pageNr))">
+                    @(i + 1)
+                </button>
+            }
+
+            @* @if () *@
+            @*     break; *@
+        }
+    }
+
+    if (dataTable.Length > 10)
+    {
+        <div>
+            <label class="form-check-label" for="tableSize">Table Size: </label>
+            <select class="form-check-inline" name="tableSize" @bind="pageSize">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+    }
+}
+
+@code {
+    private Game[]? dataTable;
+    private bool IsAdmin = false;
+    private string SortedBy = "Name";
+    private bool SortedAsc = true;
+    public short pageIndex = 0;
+    private short? _pageSize;
+    public short pageSize
+    {
+        get
+        {
+            _pageSize ??= 10;
+            return (short)_pageSize;
+        }
+        set
+        {
+            pageIndex = 0;
+            _pageSize = value;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(0);
+        dataTable = Program.context?.Games.OrderBy(x => x.Name).ToArray();
+    }
+
+    private void PaginationButtonPressed(short index) => pageIndex = index;
+
+    private void SortTableBy(string selector)
+    {
+        if (SortedBy == selector && SortedAsc)
+        {
+            dataTable = dataTable!.AsQueryable().OrderBy(selector + " DESC").ToArray();
+            SortedAsc = false;
+            return;
+        }
+
+        SortedBy = selector;
+        dataTable = dataTable!.AsQueryable().OrderBy(selector).ToArray();
+        SortedAsc = true;
+    }
+
+    public List<int> EntryBeingEditted = [];
+    private void ShowEditor(int id)
+    {
+        if (EntryBeingEditted.Contains(id))
+            EntryBeingEditted.Remove(id);
+        else
+            EntryBeingEditted.Add(id);
+    }
+    private async Task ModifyGame(int id)
+    {
+        if (Program.context == null || dataTable == null)
+            return;
+
+        foreach (var game in Program.context!.Games.Where(x => x.Id == id))
+        {
+            var data = dataTable!.First(x => x.Id == id);
+            game.Name = data.Name;
+            game.Genre = data.Genre;
+            game.Platform = data.Platform;
+            game.Publisher = data.Publisher;
+            game.Developer = data.Developer;
+            game.ReleaseYear = data.ReleaseYear;
+            game.Barcode = data.Barcode;
+            game.MediaType = data.MediaType;
+            game.Packaging = data.Packaging;
+            game.Shelf = data.Shelf;
+            game.Borrower = data.Borrower;
+        }
+        await Program.context!.SaveChangesAsync();
+        EntryBeingEditted.Remove(id);
+    }
+
+    private List<int> GamesQueuedForDeletion = [];
+    private void DisposeGame(int id)
+    {
+        if (Program.context == null)
+            return;
+
+        var game = Program.context.Games.Find(id);
+        if (game == null)
+            return;
+
+        if (!GamesQueuedForDeletion.Contains(id))
+        {
+            GamesQueuedForDeletion.Add(id);
+            return;
+        }
+
+        Program.context.Games.Remove(game);
+        Program.context.SaveChanges();
+        dataTable = Program.context!.Games.ToArray();
+    }
+
+    private Game BlankGame = null!;
+    private bool CreateGameOpened = false;
+    private void CreateGame()
+    {
+        if (Program.context == null)
+            return;
+
+        if (!CreateGameOpened)
+        {
+            BlankGame = new();
+            CreateGameOpened = true;
+            return;
+        }
+
+        if (string.IsNullOrEmpty(BlankGame.Name)
+        || string.IsNullOrEmpty(BlankGame.Genre)
+        || string.IsNullOrEmpty(BlankGame.Platform)
+        || string.IsNullOrEmpty(BlankGame.Developer)
+        || BlankGame.ReleaseYear < 1950
+        || string.IsNullOrEmpty(BlankGame.Shelf)
+        || BlankGame.Barcode < 10000000
+        || string.IsNullOrEmpty(BlankGame.Shelf))
+        {
+            return;
+        }
+
+        Program.context.Add(BlankGame);
+        Program.context.SaveChanges();
+        CreateGameOpened = false;
+        SortedAsc = true;
+        dataTable = Program.context?.Games.OrderBy(x => x.Name).ToArray();
+    }
+
+    private string _searchQuerry = string.Empty;
+    private string SearchQuerry
+    {
+        get => _searchQuerry;
+        set
+        {
+            _searchQuerry = value;
+            SearchGame();
+        }
+    }
+    private void SearchGame()
+    {
+        string querry = SearchQuerry.ToLower().Replace(" ", "");
+        if (string.IsNullOrEmpty(querry))
+        {
+            dataTable = Program.context!.Games.ToArray();
+            return;
+        }
+
+        string[] querryParts = querry.Split(',');
+        var properties = typeof(Game).GetProperties();
+
+        var filter = Program.context!.Games.ToList().Where(x =>
+            properties.Any(y =>
+                querryParts.Any(z =>
+                    (y.GetValue(x) ?? (object)'-')!.ToString()!.Trim().ToLower().Contains(z)
+        ))).ToArray();
+
+        // if (filter.Length == 0)
+        //     dataTable = Program.context!.Games.ToArray();
+        // else 
+        dataTable = filter;
+    }
+
+    #region SortingStrings
+    private const string Aschending = "\u25BE"; // ▾
+    private const string Descending = "\u25B4"; // ▴
+    private string NameSort
+    {
+        get
+        {
+            if (SortedBy != "Name")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string GenreSort
+    {
+        get
+        {
+            if (SortedBy != "Genre")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string PlatformSort
+    {
+        get
+        {
+            if (SortedBy != "Platform")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string PublisherSort
+    {
+        get
+        {
+            if (SortedBy != "Publisher")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string DeveloperSort
+    {
+        get
+        {
+            if (SortedBy != "Developer")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string YearSort
+    {
+        get
+        {
+            if (SortedBy != "ReleaseDate")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string BarcodeSort
+    {
+        get
+        {
+            if (SortedBy != "Barcode")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string MediaSort
+    {
+        get
+        {
+            if (SortedBy != "MediaType")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string PackagingSort
+    {
+        get
+        {
+            if (SortedBy != "Packaging")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string ShelfSort
+    {
+        get
+        {
+            if (SortedBy != "Shelf")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    private string BorrowerSort
+    {
+        get
+        {
+            if (SortedBy != "Borrower")
+                return string.Empty;
+            return SortedAsc ? Aschending : Descending;
+        }
+    }
+    #endregion
+}

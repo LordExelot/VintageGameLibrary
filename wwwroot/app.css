@@ -1,5 +1,7 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #181a1b;
+    color: #d8d5cf !important;
 }
 
 a, .btn-link {
@@ -48,4 +50,29 @@ h1:focus {
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
+}
+
+.table th
+{
+    cursor:pointer;
+}
+
+.table th, .table td {
+    white-space: nowrap;
+    color: #e8e6e3;
+    border-color: #dee2e6;
+}
+
+.table td {
+    border-bottom-width: 1px;
+}
+
+.input-group-sm {
+    width: 120px;
+    box-sizing: border-box;
+    align-content: center;
+}
+
+.button {
+    color: #d1cdc7 !important;
 }

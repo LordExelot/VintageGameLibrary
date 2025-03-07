@@ -1,0 +1,90 @@
+﻿@page
+@model VintageGameLibrary.Components.Pages.Games.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Genre)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Platform)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Publisher)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Developer)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].ReleaseYear)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Barcode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].MediaType)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Packaging)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Game[0].Shelf)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Game) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Genre)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Platform)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Publisher)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Developer)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ReleaseYear)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Barcode)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.MediaType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Packaging)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Shelf)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
